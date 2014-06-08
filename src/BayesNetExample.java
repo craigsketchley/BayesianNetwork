@@ -31,7 +31,7 @@ public class BayesNetExample {
 		
 		curTime = System.nanoTime();		
 		// Setup MCMC with the number of iterations. 
-		MCMC mc = new MCMC(10000);
+		MCMC mc = new MCMC(100, 1000);
 		
 		// Fix the evidence variables
 		mc.setEvidenceObservation(VariableType.S, true);

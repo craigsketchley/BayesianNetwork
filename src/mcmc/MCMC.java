@@ -17,41 +17,42 @@ public class MCMC {
 	LinkedHashMap<VariableType, Variable> variables;
 	LinkedHashMap<VariableType, Variable> evidence;
 	
-	int N;
+	int N, M;
 	
 	/**
 	 * Sets up MCMC for the specified Bayes Net for N iterations.
 	 * 
 	 * @param N
 	 */
-	public MCMC(int N) {
+	public MCMC(int N, int M) {
 		this.N = N;
+		this.M = M;
 		variables = new LinkedHashMap<VariableType, Variable>();
 		evidence = new LinkedHashMap<VariableType, Variable>();
 		
 		// Setup the network for this specific example...
 		
-		Variable B = new Variable(VariableType.B);
-		Variable C = new Variable(VariableType.C);
-		Variable I = new Variable(VariableType.I);
-		Variable M = new Variable(VariableType.M);
-		Variable S = new Variable(VariableType.S);
+		Variable b = new Variable(VariableType.B);
+		Variable c = new Variable(VariableType.C);
+		Variable i = new Variable(VariableType.I);
+		Variable m = new Variable(VariableType.M);
+		Variable s = new Variable(VariableType.S);
 		
-		B.addParentsAndProbabilities(new Variable [] {
-				M
+		b.addParentsAndProbabilities(new Variable [] {
+				m
 		}, new double [] {
 					  // M
 				0.05, // F
 				0.20  // T
 		});
-		B.addChildren(new Variable [] {
-				C,
-				S
+		b.addChildren(new Variable [] {
+				c,
+				s
 		});
 		
-		C.addParentsAndProbabilities(new Variable [] {
-				B,
-				I
+		c.addParentsAndProbabilities(new Variable [] {
+				b,
+				i
 		}, new double [] {
 					  // B I
 				0.05, // F F
@@ -59,43 +60,43 @@ public class MCMC {
 				0.80, // T F
 				0.80  // T T
 		});
-		C.addChildren(new Variable [] {});
+		c.addChildren(new Variable [] {});
 		
-		I.addParentsAndProbabilities(new Variable [] {
-				M
+		i.addParentsAndProbabilities(new Variable [] {
+				m
 		}, new double [] {
 					  // M
 				0.20, // F
 				0.80  // T
 		});
-		I.addChildren(new Variable [] {
-				C
+		i.addChildren(new Variable [] {
+				c
 		});
 		
-		M.addParentsAndProbabilities(new Variable [] {}, new double [] {
+		m.addParentsAndProbabilities(new Variable [] {}, new double [] {
 				0.20
 		});
-		M.addChildren(new Variable [] {
-				B,
-				I
+		m.addChildren(new Variable [] {
+				b,
+				i
 		});
 		
-		S.addParentsAndProbabilities(new Variable [] {
-				B
+		s.addParentsAndProbabilities(new Variable [] {
+				b
 		}, new double [] {
 					  // B
 				0.60, // F
 				0.80  // T
 		});
-		S.addChildren(new Variable [] {});
+		s.addChildren(new Variable [] {});
 		
 		
 		// Add variable in alphabetical order.
-		variables.put(VariableType.B, B);
-		variables.put(VariableType.C, C);
-		variables.put(VariableType.I, I);
-		variables.put(VariableType.M, M);
-		variables.put(VariableType.S, S);
+		variables.put(VariableType.B, b);
+		variables.put(VariableType.C, c);
+		variables.put(VariableType.I, i);
+		variables.put(VariableType.M, m);
+		variables.put(VariableType.S, s);
 	}
 	
 	/**
@@ -112,16 +113,22 @@ public class MCMC {
 		
 		Iterator<Variable> iter = variables.values().iterator();
 		
-		for (int i = 0; i < N; i++) {
-			if (!iter.hasNext()) {
-				iter = variables.values().iterator();
-			}
-			Variable v = iter.next();
-			v.setAssignment(Math.random() < v.getProbabilityGivenMB());
-			incrementTrueCounters();
-		}
+		double sum = 0;
 		
-		return variables.get(var).trueCount / (double) N;
+		for (int i = 0; i < M; i++) {
+			for (int j = 0; j < N; j++) {
+				if (!iter.hasNext()) {
+					iter = variables.values().iterator();
+				}
+				Variable v = iter.next();
+				v.setAssignment(Math.random() < v.getProbabilityGivenMB());
+				incrementTrueCounters();
+			}
+			sum += variables.get(var).trueCount / (double) N;
+			resetTrueCounters();
+		}
+
+		return sum / M;
 	}
 	
 	/**
@@ -130,6 +137,12 @@ public class MCMC {
 	private void incrementTrueCounters() {
 		for (Variable v : variables.values()) {
 			v.trueCount += (v.currentAssignment) ? 1 : 0;
+		}
+	}
+	
+	private void resetTrueCounters() {
+		for (Variable v : variables.values()) {
+			v.trueCount = 0;
 		}
 	}
 	
