@@ -19,6 +19,8 @@ public class BayesNetExample {
 		// Setup Variable Elimination with the elimination ordering
 		VE ve = new VE(VariableType.M, VariableType.S, VariableType.C, VariableType.B, VariableType.I);
 
+		ve.turnOnDebugOutput();
+		
 		// Fix the evidence variables
 		ve.setEvidenceObservation(VariableType.S, true);
 		ve.setEvidenceObservation(VariableType.C, false);
@@ -31,7 +33,7 @@ public class BayesNetExample {
 		
 		curTime = System.nanoTime();		
 		// Setup MCMC with the number of iterations. 
-		MCMC mc = new MCMC(100, 1000);
+		MCMC mc = new MCMC(1000, 1000);
 		
 		// Fix the evidence variables
 		mc.setEvidenceObservation(VariableType.S, true);

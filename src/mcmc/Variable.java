@@ -12,16 +12,16 @@ import util.VariableType;
  */
 public class Variable {
 
-	Variable[] parents;
-	double[] probabilities;
+	private VariableType var;
 
-	Variable[] children;
+	private Variable[] parents;
+	private double[] probabilities;
+	
+	private Variable[] children;
 
-	VariableType var;
+	private boolean currentAssignment;
 
-	boolean currentAssignment;
-
-	int trueCount;
+	private int trueCount;
 
 	/**
 	 * Construct a random variable. Assumes variables are always ordered
@@ -113,6 +113,49 @@ public class Variable {
 
 		// Return the normalised true prob.
 		return trueOutput / (trueOutput + falseOutput);
+	}
+	
+	/**
+	 * Sets the current assignment.
+	 * 
+	 * @param assignment
+	 */
+	public void setCurrentAssignment(boolean assignment) {
+		this.currentAssignment = assignment;
+	}
+	
+	/**
+	 * Gets the current assignment.
+	 * 
+	 * @return
+	 */
+	public boolean currentAssignment() {
+		return this.currentAssignment;
+	}
+	
+	/**
+	 * Increments the true count if the current assignment is true.
+	 */
+	public void incrementTrueCount() {
+		if (currentAssignment) {
+			trueCount++;
+		}
+	}
+	
+	/**
+	 * Resets the true count to zero.
+	 */
+	public void resetTrueCount() {
+		this.trueCount = 0;
+	}
+	
+	/**
+	 * Gets the true count.
+	 * 
+	 * @return
+	 */
+	public int getTrueCount() {
+		return this.trueCount;
 	}
 
 	/**

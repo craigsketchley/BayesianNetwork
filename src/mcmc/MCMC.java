@@ -14,19 +14,46 @@ import util.VariableType;
  */
 public class MCMC {
 
-	LinkedHashMap<VariableType, Variable> variables;
-	LinkedHashMap<VariableType, Variable> evidence;
+	private LinkedHashMap<VariableType, Variable> variables;
+	private LinkedHashMap<VariableType, Variable> evidence;
 	
-	int N, M;
+	private int N, M;
 	
 	/**
 	 * Sets up MCMC for the specified Bayes Net for N iterations.
 	 * 
 	 * @param N
+	 * @param M
 	 */
 	public MCMC(int N, int M) {
 		this.N = N;
 		this.M = M;
+		
+		resetBayesNet();
+	}
+	
+	/**
+	 * Sets the number of iterations used in MCMC.
+	 * 
+	 * @param N
+	 */
+	public void setN(int N) {
+		this.N = N;
+	}
+	
+	/**
+	 * Sets the number of times to run MCMC and averaged.
+	 * 
+	 * @param M
+	 */
+	public void setM(int M) {
+		this.M = M;
+	}
+	
+	/**
+	 * Resets the Bayes Net to begin assigning evidence and computing queries.
+	 */
+	public void resetBayesNet() {
 		variables = new LinkedHashMap<VariableType, Variable>();
 		evidence = new LinkedHashMap<VariableType, Variable>();
 		
@@ -107,8 +134,10 @@ public class MCMC {
 	 * @return
 	 */
 	public double computeQuery(VariableType var) {
-		if (variables.values().size() == 0) {
-			return evidence.get(var).currentAssignment ? 1 : 0;
+		if (variables.values().size() == 0 || evidence.containsKey(var)) {
+			// If the variable has already been observed, don't need to compute...
+			// Return 1 if the variable has been observed to be true, 0 otherwise.
+			return evidence.get(var).currentAssignment() ? 1 : 0;
 		}
 		
 		Iterator<Variable> iter = variables.values().iterator();
@@ -116,6 +145,7 @@ public class MCMC {
 		double sum = 0;
 		
 		for (int i = 0; i < M; i++) {
+			randomiseVariableAssignments();
 			for (int j = 0; j < N; j++) {
 				if (!iter.hasNext()) {
 					iter = variables.values().iterator();
@@ -124,11 +154,11 @@ public class MCMC {
 				v.setAssignment(Math.random() < v.getProbabilityGivenMB());
 				incrementTrueCounters();
 			}
-			sum += variables.get(var).trueCount / (double) N;
+			sum += variables.get(var).getTrueCount();
 			resetTrueCounters();
 		}
 
-		return sum / M;
+		return sum / (M * N);
 	}
 	
 	/**
@@ -136,13 +166,25 @@ public class MCMC {
 	 */
 	private void incrementTrueCounters() {
 		for (Variable v : variables.values()) {
-			v.trueCount += (v.currentAssignment) ? 1 : 0;
+			v.incrementTrueCount();
 		}
 	}
 	
+	/**
+	 * Resets all the true counts for each non-evidence variable.
+	 */
 	private void resetTrueCounters() {
 		for (Variable v : variables.values()) {
-			v.trueCount = 0;
+			v.resetTrueCount();
+		}
+	}
+	
+	/**
+	 * Randomises all the non-evidence variable assignments.
+	 */
+	private void randomiseVariableAssignments() {
+		for (Variable v : variables.values()) {
+			v.setCurrentAssignment((Math.random() < 0.5) ? true : false);
 		}
 	}
 	

@@ -236,7 +236,7 @@ public class Factor {
 	 * @param var
 	 * @return
 	 */
-	private Factor sumOut(VariableType var) {
+	private void sumOut(VariableType var) {
 		// Find the index of the variable to be marginalised. Also, create a new
 		// array of all other variables. Keeping relative ordering.
 		int i = 0;
@@ -253,7 +253,7 @@ public class Factor {
 
 		if (varIndex < 0) {
 			// TODO: No such element. Is this correct behaviour?
-			return this;
+			return;
 		}
 
 		// Marginalise for the true and false values of the variable into a new
@@ -271,9 +271,9 @@ public class Factor {
 			}
 		}
 
-		reverseArrayInPlace(vars);
-
-		return new Factor(newValues, vars);
+		this.values = newValues;
+		this.variables = vars;
+		this.variableSet.remove(var);
 	}
 
 	/**
@@ -297,12 +297,10 @@ public class Factor {
 	 * @param var
 	 * @return
 	 */
-	public Factor sumOut(VariableType... vars) {
-		Factor output = this;
+	public void sumOut(VariableType... vars) {
 		for (VariableType v : vars) {
-			output = output.sumOut(v);
+			sumOut(v);
 		}
-		return output;
 	}
 
 	/**
@@ -393,6 +391,11 @@ public class Factor {
 		return this.variableSet.contains(var);
 	}
 	
+	/**
+	 * Returns true if this factor has no free variables.
+	 * 
+	 * @return
+	 */
 	public boolean isEmpty() {
 		return variableSet.isEmpty();
 	}
@@ -401,8 +404,8 @@ public class Factor {
 	public String toString() {
 		StringBuilder output = new StringBuilder();
 
-		for (VariableType v : variables) {
-			output.append(v.toString() + '\t');
+		for (int i = variables.length - 1; i >= 0; i--) {
+			output.append(variables[i].toString() + '\t');
 		}
 
 		output.append("Phi\n");
@@ -412,7 +415,7 @@ public class Factor {
 			for (int j = 0; j < variables.length; j++) {
 				output.append((i & (mask >> j)) > 0 ? "T\t" : "F\t");
 			}
-			output.append(values[i] + "\n");
+			output.append(String.format("%.4f\n", values[i]));
 		}
 
 		return output.toString();

@@ -96,13 +96,13 @@ public class FactorTest {
 	
 	@Test
 	public void sumOutTest() {
-		Factor result = PhiC.sumOut(VariableType.B);
+		PhiC.sumOut(VariableType.B);
 		
 		VariableType[] vars = {VariableType.I, VariableType.C};
 		double[] values = { 1.15, 0.4, 0.85, 1.6 };
 		
-		assertArrayEquals(vars, result.getVariables());
-		assertArrayEquals(values, result.getValues(), DELTA);
+		assertArrayEquals(vars, PhiC.getVariables());
+		assertArrayEquals(values, PhiC.getValues(), DELTA);
 	}
 	
 	@Test
