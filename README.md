@@ -1,4 +1,4 @@
-# COMP3608 - Assignment 2 Code
+# Bayesian Network Algorithms
 
 ## Variable Elimination
 
